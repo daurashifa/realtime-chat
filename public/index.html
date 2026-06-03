@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Realtime Chat</title>
+</head>
+<body>
+
+    <h1>Realtime Chat App</h1>
+    <h3>User Online</h3>
+    <div id="userList"></div>
+    <div id="chatBox"></div>
+
+    <input type="text" id="username" placeholder="Username">
+
+    <input type="text" id="message">
+
+    <button id="sendButton">Kirim</button>
+    <script src="/socket.io/socket.io.js"></script>
+    <h2>Collaborative Document</h2>
+
+<textarea id="editor" rows="10" cols="50"></textarea>
+
+   <script>
+const socket = io();
+
+const messageInput = document.getElementById("message");
+const sendButton = document.getElementById("sendButton");
+const chatBox = document.getElementById("chatBox");
+const userList = document.getElementById("userList");
+const usernameInput = document.getElementById("username");
+const editor = document.getElementById("editor");
+let hasJoined = false;
+
+console.log("Socket terhubung");
+
+socket.on("welcome", (message) => {
+    console.log(message);
+});
+
+socket.on("newMessage", (data) => {
+    chatBox.innerHTML += `
+        <p><b>${data.username}</b>: ${data.message}</p>
+    `;
+});
+socket.on("updateUsers", (users) => {
+
+    userList.innerHTML = "";
+
+    users.forEach((user) => {
+        userList.innerHTML += `<p>${user}</p>`;
+    });
+});
+
+sendButton.addEventListener("click", () => {
+    const message = messageInput.value;
+    const username = usernameInput.value;
+
+    if (!hasJoined) {
+    socket.emit("join", username);
+    hasJoined = true;
+}
+    socket.emit("chatMessage", {
+        username,
+        message
+    });
+
+    messageInput.value = "";
+});
+</script>
+</body>
+</html>
